@@ -26,13 +26,13 @@ test('configurator assets use extension-root paths and controls have fallback de
 		headerFontSize: '0.09',
 		cellFontSize: '0.08',
 		pinNameFontSize: '0.08',
-		pinNumberFontSize: '0.07',
+		pinNumberFontSize: '0.08',
 		outerLineWidth: '2',
 		headerLineWidth: '2',
 		titleColor: '#1f2328',
 		accentColor: '#c73737',
 		textColor: '#4e565e',
-		mutedColor: '#737b83',
+		mutedColor: '#a2a2a2',
 		pinColor: '#880000',
 	};
 

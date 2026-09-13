@@ -12,7 +12,7 @@ import {
 } from './pinmux';
 
 const CONFIGURATOR_IFRAME_ID = 'pinmux2symbol-configurator';
-const CONFIG_STORAGE_KEY = 'pinmux2symbol.layout.v4';
+const CONFIG_STORAGE_KEY = 'pinmux2symbol.layout.v5';
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 const UNIT_MM = 0.254;
 
@@ -209,14 +209,16 @@ function appendText(
 	color: string,
 	anchor: 'start' | 'middle' | 'end' = 'start',
 	baseline = 'middle',
+	fontFamily = 'Courier New, monospace',
+	fontWeight = 700,
 ): void {
 	const element = createSvgElement('text', {
 		'x': x,
 		'y': y,
 		'fill': color,
-		'font-family': 'Courier New, monospace',
+		'font-family': fontFamily,
 		'font-size': fontSize,
-		'font-weight': 700,
+		'font-weight': fontWeight,
 		'text-anchor': anchor,
 		'dominant-baseline': baseline,
 	});
@@ -359,7 +361,7 @@ function drawPreview(layout: SymbolLayout, symbolName: string): void {
 				}
 			}
 
-			appendText(drawing, placement.displayPinName, placement.pinNameX, y, options.pinNameFontSize, options.titleColor, 'end');
+			appendText(drawing, placement.displayPinName, placement.pinNameX, y, options.pinNameFontSize, options.mutedColor, 'end', 'middle', 'Arial, sans-serif', 400);
 			drawing.append(createSvgElement('line', {
 				'x1': bodyRight,
 				'y1': y,
@@ -369,7 +371,7 @@ function drawPreview(layout: SymbolLayout, symbolName: string): void {
 				'stroke-width': 1.5,
 				'vector-effect': 'non-scaling-stroke',
 			}));
-			appendText(drawing, placement.pinNumber, placement.pinNumberX, y, options.pinNumberFontSize, options.mutedColor, 'start', 'text-after-edge');
+			appendText(drawing, placement.pinNumber, placement.pinNumberX, y, options.pinNumberFontSize, options.mutedColor, 'start', 'text-after-edge', 'Arial, sans-serif', 400);
 		}
 	}
 

@@ -151,6 +151,23 @@ test('font sizes accept inch input and convert to EasyEDA native values', () => 
 	assert.equal(normalizeSymbolLayoutOptions({ pinNameFontSize: 8 }).pinNameFontSize, 8);
 });
 
+test('pin attributes default to 0.08 inch regular Arial in light gray', async () => {
+	const options = normalizeSymbolLayoutOptions();
+	assert.equal(options.pinNameFontSize, 8);
+	assert.equal(options.pinNumberFontSize, 8);
+	assert.equal(options.mutedColor, '#A2A2A2');
+
+	const source = generateSymbolSource(await referenceTable());
+	const attributeRecords = source.split('\n').filter(line => line.includes('"type":"ATTR"'));
+	assert.ok(attributeRecords.length > 0);
+	for (const record of attributeRecords) {
+		assert.match(record, /"color":"#A2A2A2"/);
+		assert.match(record, /"fontFamily":"Arial"/);
+		assert.match(record, /"fontSize":8/);
+		assert.match(record, /"fontWeight":false/);
+	}
+});
+
 test('EasyEDA method-style errors retain duplicate-name details', () => {
 	const apiError = {
 		message: () => '标题已存在',

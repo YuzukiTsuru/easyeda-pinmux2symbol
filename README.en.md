@@ -13,7 +13,7 @@ A JLCEDA / EasyEDA Pro extension: it reads a pinmux CSV and generates a device a
    npm run build
    ```
 
-2. Import `build/dist/pinmux2symbol_v1.1.9.eext` in the EasyEDA Pro extension manager.
+2. Import `build/dist/pinmux2symbol_v1.1.10.eext` in the EasyEDA Pro extension manager.
 3. Open the configuration and preview window from the top menu `Pinmux2Symbol -> 从 CSV 生成器件和符号` (Generate device and symbol from CSV).
 4. Pick a CSV and adjust the global dimensions, font sizes, line widths and colors. The right-hand pane previews the result in real time using the actual pinmux data.
 5. Click “生成器件和符号”. The extension creates the personal-library symbol, writes every pin and multiplexing function, then creates a device with the same name and binds it to that symbol.
@@ -27,7 +27,7 @@ The generated symbol contains:
 - `FunctionN` columns shown as separate `MUXN` table columns in their original positions, with empty cells keeping their alignment;
 - composite Pin Names split into a `DISABLE` function and the main PIN name;
 - Banks such as PA, PB and PC each generated as an independent compact table that keeps only the MUX columns that Bank uses; columns are aligned with blank space and no vertical separators are drawn;
-- all table text in bold `Courier New`; the configuration page shows inches (the default pin name size is `0.08 inch`), pin attributes are converted to inches when calling the API, and plain text keeps the symbol's internal font-size unit;
+- Bank and MUX table text in bold `Courier New`; pin name and number attributes default to regular `Arial`, `0.08 inch`, and `#A2A2A2`;
 - every outline, text anchor, pin and header rule strictly aligned to the 100 mil (2.54 mm) grid;
 - one global configuration shared by all Banks, saved automatically inside the extension;
 - an editable chip outline, title, and pin number/name attributes;

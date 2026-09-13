@@ -140,13 +140,13 @@ export const DEFAULT_SYMBOL_LAYOUT_OPTIONS: Readonly<SymbolLayoutOptions> = Obje
 	headerFontSize: 9,
 	cellFontSize: 8,
 	pinNameFontSize: 8,
-	pinNumberFontSize: 7,
+	pinNumberFontSize: 8,
 	outerLineWidth: 1,
 	headerLineWidth: 1,
 	titleColor: '#1F2328',
 	accentColor: '#C73737',
 	textColor: '#4E565E',
-	mutedColor: '#737B83',
+	mutedColor: '#A2A2A2',
 	pinColor: '#880000',
 });
 
@@ -513,12 +513,12 @@ function attribute(partId: string, parentId: string, key: string, value: string,
 		rotation: 0,
 		color,
 		fillColor: null,
-		fontFamily: 'Courier New',
+		fontFamily: 'Arial',
 		fontSize,
 		strikeout: false,
 		underline: false,
 		italic: false,
-		fontWeight: true,
+		fontWeight: false,
 		vAlign: 1,
 		hAlign: align,
 	};
@@ -604,7 +604,7 @@ export function generateSymbolSource(table: PinmuxTable, sourceOptions: SymbolSo
 				color: options.pinColor,
 				pinShape: 0,
 			}), pinId));
-			records.push(record('ATTR', attribute(partId, pinId, 'NAME', displayPinName, pinNameX, y, 2, options.pinNameFontSize, options.titleColor), id('name-', index)));
+			records.push(record('ATTR', attribute(partId, pinId, 'NAME', displayPinName, pinNameX, y, 2, options.pinNameFontSize, options.mutedColor), id('name-', index)));
 			records.push(record('ATTR', attribute(partId, pinId, 'NUMBER', pinNumber, pinNumberX, y, 0, options.pinNumberFontSize, options.mutedColor), id('number-', index)));
 
 			for (const [columnIndex, column] of bank.columns.entries()) {
