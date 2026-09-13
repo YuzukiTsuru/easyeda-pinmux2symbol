@@ -1,51 +1,47 @@
 [简体中文](./README.md) | [English](./README.en.md) | [繁體中文](./README.zh-Hant.md) | [日本語](#) | [Русский](./README.ru.md)
 
-# pro-api-sdk
+# Pinmux2Symbol
 
-嘉立创EDA & EasyEDA Pro Edition は API 開発ツールを拡張します
+嘉立创EDA / EasyEDA プロ版の拡張機能です。pinmux CSV を読み込み、現在のワークスペースの個人ライブラリにデバイスと、それに関連付けられた編集可能な回路図シンボルを生成します。
 
-<a href="https://github.com/easyeda/pro-api-sdk" style="vertical-align: inherit;" target="_blank"><img src="https://img.shields.io/github/stars/easyeda/pro-api-sdk" alt="GitHub Repo Stars" class="not-medium-zoom-image" style="display: inline; vertical-align: inherit;" /></a>&nbsp;<a href="https://github.com/easyeda/pro-api-sdk/issues" style="vertical-align: inherit;" target="_blank"><img src="https://img.shields.io/github/issues/easyeda/pro-api-sdk" alt="GitHub Issues" class="not-medium-zoom-image" style="display: inline; vertical-align: inherit;" /></a>&nbsp;<a href="https://github.com/easyeda/pro-api-sdk" style="vertical-align: inherit;" target="_blank"><img src="https://img.shields.io/github/repo-size/easyeda/pro-api-sdk" alt="GitHub Repo Size" class="not-medium-zoom-image" style="display: inline; vertical-align: inherit;" /></a>&nbsp;<a href="https://choosealicense.com/licenses/apache-2.0/" style="vertical-align: inherit;" target="_blank"><img src="https://img.shields.io/github/license/easyeda/pro-api-sdk" alt="GitHub License" class="not-medium-zoom-image" style="display: inline; vertical-align: inherit;" /></a>&nbsp;<a href="https://www.npmjs.com/package/@jlceda/pro-api-types" style="vertical-align: inherit;" target="_blank"><img src="https://img.shields.io/npm/v/%40jlceda%2Fpro-api-types?label=pro-api-types" alt="NPM Version" class="not-medium-zoom-image" style="display: inline; vertical-align: inherit;" /></a>&nbsp;<a href="https://www.npmjs.com/package/@jlceda/pro-api-types" style="vertical-align: inherit;" target="_blank"><img src="https://img.shields.io/npm/d18m/%40jlceda%2Fpro-api-types" alt="NPM Downloads" class="not-medium-zoom-image" style="display: inline; vertical-align: inherit;" /></a>
+## 使い方
 
-> [!NOTE]
->
-> 詳細な開発ドキュメントについては、以下をご覧ください：[https://prodocs.easyeda.com/en/api/guide/](https://prodocs.easyeda.com/en/api/guide/)
+1. 依存関係をインストールして拡張機能をビルドします：
 
-## 開発に入る
+   ```shell
+   npm install
+   npm run build
+   ```
 
-この開発ツールセットには、[EasyEDA Pro Edition](https://pro.easyeda.com/) 拡張パッケージを開発するためのすべての環境とツールが含まれており、ESLint の推奨ルールが組み込まれています。
+2. EasyEDA プロ版の拡張機能マネージャーで `build/dist/pinmux2symbol_v1.1.8.eext` をインポートします。
+3. トップメニュー `Pinmux2Symbol -> 从 CSV 生成器件和符号`（CSV からデバイスとシンボルを生成）から設定とプレビューのウィンドウを開きます。
+4. CSV を選択し、全体の寸法・フォントサイズ・線幅・色を調整します。右側には実際の pinmux データを使った結果がリアルタイムでプレビューされます。
+5. 「生成器件和符号」をクリックします。拡張機能は個人ライブラリのシンボルを作成し、すべてのピンとマルチプレクス機能を書き込んだうえで、同名のデバイスを作成してそのシンボルに関連付けます。
 
-1. プロジェクト [pro-api-sdk](https://github.com/easyeda/pro-api-sdk) リポジトリをローカル コンピューターにクローンします
+1 行目には `Pin Name` と `IO Type` が必要です。それ以外の列はマルチプレクス機能の列として扱われます。リポジトリ内の [`reference/pinout.csv`](./reference/pinout.csv) はそのままインポートできます。
 
-    ```shell
-    git clone --depth=1 https://github.com/easyeda/pro-api-sdk.git
-    ```
+生成されるシンボルには以下が含まれます：
 
-2. 開発環境の初期化 (依存関係のインストール)
+- CSV の各行に対して一意の番号が付いた PIN を 1 つ。
+- `Pin Name` をピン名とし、`IO Type` を入力・出力・双方向の電気タイプにマッピング。
+- `FunctionN` 列は元の位置のまま独立した `MUXN` テーブル列として表示され、空のセルも位置を保って整列。
+- 複合的な Pin Name は `DISABLE` 機能と主 PIN 名に分割。
+- PA、PB、PC などの Bank ごとに独立したコンパクトなテーブルを生成し、その Bank が使用する MUX 列だけを残します。列の間は余白で整列し、縦の区切り線は描画しません。
+- テーブル内のすべての文字は太字の `Courier New`。設定ページはインチ表示（既定のピン名は `0.08 inch`）で、ピン属性は API 呼び出し時にインチへ換算し、通常のテキストはシンボル内部のフォントサイズ単位を維持します。
+- すべての外枠・文字アンカー・ピン・ヘッダーの横線は 100 mil（2.54 mm）グリッドに厳密に整列。
+- すべての Bank が 1 つのグローバル設定を共有し、設定は拡張機能内に自動保存されます。
+- 編集可能なチップ外枠・タイトル・ピン番号／ピン名の属性。
+- 同名のデバイス。既定の参照番号は `U` で、BOM に追加され、生成された回路図シンボルにバインドされます。
+- 各 Bank の内側に空白の電源 IO 用の 1 行を予約できます。既定では無効で、設定ページで有効化または予約行の高さを変更できます。予約領域には文字やピンが自動で作成されることはなく、生成後に EasyEDA 上で自由に編集できます。
 
-    ```shell
-    npm install
-    ```
+## 開発時のチェック
 
-3. いくつかの変更を加えます...
+```shell
+npm run lint
+npm test
+npm run build
+```
 
-    - フォルダ名をプロジェクト名に変更してください
-    - [開発ガイド](https://prodocs.lceda.cn/en/api/guide/how-to-start.html#ii-extension-configuration) を参照し、`extension.json` 内の `name`、`displayName`、`description`、`publisher` フィールドを変更してください
-    - [拡張機能 API リファレンス](https://prodocs.lceda.cn/en/api/reference/pro-api.html) を参照して、コードを作成してください
+ソースジェネレーターは [`src/pinmux.ts`](./src/pinmux.ts) にあり、EasyEDA ランタイムに依存しないため、CSV の解析とシンボルソースの構造を単体でテストできます。
 
-> [!NOTE]
->
-> AI プログラミングツールの使用をお勧めし、公式の SKILL と組み合わせることで開発速度を向上させます：[easyeda-api-skill](https://github.com/easyeda/easyeda-api-skill)
-
-4. 拡張機能パッケージをコンパイルする
-
-    ```shell
-    npm run build
-    ```
-
-5. EasyEDA Pro Edition の `./build/dist/` の下に生成された拡張パッケージをインストールします
-
-## オープンソースライセンス
-
-<a href="https://choosealicense.com/licenses/apache-2.0/" style="vertical-align: inherit;" target="_blank"><img src="https://img.shields.io/github/license/easyeda/pro-api-sdk" alt="GitHub License" class="not-medium-zoom-image" style="display: inline; vertical-align: inherit;" /></a>
-
-この開発ツールグループは、[Apache License 2.0](https://choosealicense.com/licenses/apache-2.0/) オープンソースライセンス契約を使用しており、このツールグループに基づいて開発された拡張パッケージの **機能説明部分** および **オープンソースリリースタイトル部分** の **嘉立创EDA**、**EasyEDA** 商標情報のみを使用することができます。
+> 注意：pinmux テーブルにはピンとマルチプレクス機能しか含まれないため、PCB フットプリントのパッド寸法・ピッチ・外形は導出できません。生成されたデバイスは PCB フットプリントを自動でバインドせず、既定で PCB に転送されることもありません。

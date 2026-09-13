@@ -1,3 +1,5 @@
+[简体中文](#) | [English](./README.en.md) | [繁體中文](./README.zh-Hant.md) | [日本語](./README.ja.md) | [Русский](./README.ru.md)
+
 # Pinmux2Symbol
 
 嘉立创EDA / EasyEDA 专业版扩展：读取 pinmux CSV，在当前工作区的个人库中生成器件及其关联的可编辑原理图符号。

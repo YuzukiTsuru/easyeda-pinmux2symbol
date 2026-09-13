@@ -1,51 +1,47 @@
 [简体中文](./README.md) | [English](./README.en.md) | [繁體中文](./README.zh-Hant.md) | [日本語](./README.ja.md) | [Русский](#)
 
-# pro-api-sdk
+# Pinmux2Symbol
 
-嘉立创EDA & EasyEDA Pro Edition Расширьте возможности инструментов разработки API
+Расширение для JLCEDA / EasyEDA Pro: читает pinmux CSV и создаёт в личной библиотеке текущего рабочего пространства компонент и связанный с ним редактируемый символ принципиальной схемы.
 
-<a href="https://github.com/easyeda/pro-api-sdk" style="vertical-align: inherit;" target="_blank"><img src="https://img.shields.io/github/stars/easyeda/pro-api-sdk" alt="GitHub Repo Stars" class="not-medium-zoom-image" style="display: inline; vertical-align: inherit;" /></a>&nbsp;<a href="https://github.com/easyeda/pro-api-sdk/issues" style="vertical-align: inherit;" target="_blank"><img src="https://img.shields.io/github/issues/easyeda/pro-api-sdk" alt="GitHub Issues" class="not-medium-zoom-image" style="display: inline; vertical-align: inherit;" /></a>&nbsp;<a href="https://github.com/easyeda/pro-api-sdk" style="vertical-align: inherit;" target="_blank"><img src="https://img.shields.io/github/repo-size/easyeda/pro-api-sdk" alt="GitHub Repo Size" class="not-medium-zoom-image" style="display: inline; vertical-align: inherit;" /></a>&nbsp;<a href="https://choosealicense.com/licenses/apache-2.0/" style="vertical-align: inherit;" target="_blank"><img src="https://img.shields.io/github/license/easyeda/pro-api-sdk" alt="GitHub License" class="not-medium-zoom-image" style="display: inline; vertical-align: inherit;" /></a>&nbsp;<a href="https://www.npmjs.com/package/@jlceda/pro-api-types" style="vertical-align: inherit;" target="_blank"><img src="https://img.shields.io/npm/v/%40jlceda%2Fpro-api-types?label=pro-api-types" alt="NPM Version" class="not-medium-zoom-image" style="display: inline; vertical-align: inherit;" /></a>&nbsp;<a href="https://www.npmjs.com/package/@jlceda/pro-api-types" style="vertical-align: inherit;" target="_blank"><img src="https://img.shields.io/npm/d18m/%40jlceda%2Fpro-api-types" alt="NPM Downloads" class="not-medium-zoom-image" style="display: inline; vertical-align: inherit;" /></a>
+## Использование
 
-> [!NOTE]
->
-> Для получения подробной документации по разработке, пожалуйста, посетите: [https://prodocs.easyeda.com/en/api/guide/](https://prodocs.easyeda.com/en/api/guide/)
+1. Установите зависимости и соберите расширение:
 
-## Войти в разработку
+   ```shell
+   npm install
+   npm run build
+   ```
 
-Этот набор инструментов разработки содержит все среды и инструменты для разработки пакета расширений [EasyEDA Pro Edition](https://pro.easyeda.com/), а также имеет встроенные рекомендуемые правила для ESLint.
+2. Импортируйте `build/dist/pinmux2symbol_v1.1.8.eext` в менеджере расширений EasyEDA Pro.
+3. Откройте окно настройки и предпросмотра из верхнего меню `Pinmux2Symbol -> 从 CSV 生成器件和符号` (создать компонент и символ из CSV).
+4. Выберите CSV и настройте общие размеры, размеры шрифтов, толщину линий и цвета. Справа результат сразу отображается в режиме предпросмотра на реальных данных pinmux.
+5. Нажмите «生成器件和符号». Расширение создаст символ в личной библиотеке, запишет все выводы и функции мультиплексирования, затем создаст одноимённый компонент и привяжет его к этому символу.
 
-1. Клонируйте репозиторий проекта [pro-api-sdk](https://github.com/easyeda/pro-api-sdk) на свой локальный компьютер
+Первая строка должна содержать `Pin Name` и `IO Type`, остальные столбцы считаются столбцами функций мультиплексирования. Файл [`reference/pinout.csv`](./reference/pinout.csv) из репозитория можно импортировать напрямую.
 
-    ```shell
-    git clone --depth=1 https://github.com/easyeda/pro-api-sdk.git
-    ```
+Созданный символ содержит:
 
-2. Инициализация среды разработки (установка зависимостей)
+- один уникально пронумерованный вывод PIN на каждую строку CSV;
+- `Pin Name` в качестве имени вывода, а `IO Type` отображается в электрический тип «вход», «выход» или «двунаправленный»;
+- столбцы `FunctionN` отображаются как отдельные столбцы таблицы `MUXN` на своих исходных местах, пустые ячейки сохраняют выравнивание;
+- составные Pin Name разделяются на функцию `DISABLE` и основной PIN;
+- банки PA, PB, PC и т. д. создаются как отдельные компактные таблицы, в которых остаются только используемые этим банком столбцы MUX; столбцы выравниваются пробелами, вертикальные разделители не рисуются;
+- весь текст таблиц — полужирный `Courier New`; на странице настроек размеры указаны в дюймах (размер имени вывода по умолчанию — `0.08 inch`), при вызове API атрибуты выводов переводятся в дюймы, а обычный текст сохраняет внутреннюю единицу размера шрифта символа;
+- все контуры, точки привязки текста, выводы и горизонтальные линии заголовков строго выровнены по сетке 100 mil (2,54 мм);
+- все банки используют одну глобальную конфигурацию, которая автоматически сохраняется в расширении;
+- редактируемый контур микросхемы, заголовок и атрибуты номера/имени вывода;
+- одноимённый компонент с обозначением `U` по умолчанию, добавленный в BOM и привязанный к созданному символу;
+- возможность зарезервировать внутри каждого банка одну пустую строку под питание IO; по умолчанию выключено, включается и настраивается по высоте на странице настроек. В зарезервированной области текст и выводы автоматически не создаются, их можно добавить вручную в EasyEDA после генерации.
 
-    ```shell
-    npm install
-    ```
+## Проверки при разработке
 
-3. Внесите несколько изменений...
+```shell
+npm run lint
+npm test
+npm run build
+```
 
-    - Измените название папки на название вашего проекта
-    - Ознакомьтесь с [Руководством по разработке](https://prodocs.lceda.cn/en/api/guide/how-to-start.html#ii-extension-configuration) и измените поля `name`, `displayName`, `description` и `publisher` в файле `extension.json`
-    - Напишите свой код, руководствуясь [справочником по API расширений](https://prodocs.lceda.cn/en/api/reference/pro-api.html)
+Исходный генератор находится в [`src/pinmux.ts`](./src/pinmux.ts) и не зависит от среды выполнения EasyEDA, поэтому разбор CSV и структуру исходника символа можно тестировать отдельно.
 
-> [!NOTE]
->
-> Рекомендуется использовать инструменты AI-программирования в сочетании с официальным SKILL для ускорения разработки: [easyeda-api-skill](https://github.com/easyeda/easyeda-api-skill)
-
-4. Компиляция пакета расширения
-
-    ```shell
-    npm run build
-    ```
-
-5. Установите пакет расширения, сгенерированный в разделе `./build/dist/` в EasyEDA Pro Edition
-
-## Лицензия с открытым исходным кодом
-
-<a href="https://choosealicense.com/licenses/apache-2.0/" style="vertical-align: inherit;" target="_blank"><img src="https://img.shields.io/github/license/easyeda/pro-api-sdk" alt="GitHub License" class="not-medium-zoom-image" style="display: inline; vertical-align: inherit;" /></a>
-
-Эта группа инструментов разработки использует лицензионное соглашение с открытым исходным кодом [Apache License 2.0](https://choosealicense.com/licenses/apache-2.0/), и вы можете использовать только информацию о товарном знаке **嘉立创EDA**, **EasyEDA** для **части описания функции** и **части названия выпуска с открытым исходным кодом** пакета расширений, разработанного на основе этой группы инструментов.
+> Примечание: таблица pinmux содержит только выводы и функции мультиплексирования, из неё нельзя вывести размеры контактных площадок, шаг и форму посадочного места PCB; созданный компонент не привязывает посадочное место автоматически и по умолчанию не переносится на PCB.
