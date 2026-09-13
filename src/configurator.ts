@@ -369,7 +369,7 @@ function drawPreview(layout: SymbolLayout, symbolName: string): void {
 				'stroke-width': 1.5,
 				'vector-effect': 'non-scaling-stroke',
 			}));
-			appendText(drawing, String(placement.index + 1), placement.pinNumberX, y, options.pinNumberFontSize, options.mutedColor, 'start', 'text-after-edge');
+			appendText(drawing, placement.pinNumber, placement.pinNumberX, y, options.pinNumberFontSize, options.mutedColor, 'start', 'text-after-edge');
 		}
 	}
 

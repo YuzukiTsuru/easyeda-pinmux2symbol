@@ -31,6 +31,33 @@ test('reference pinout is grouped by GPIO bank and preserves shared-pad semantic
 	assert.equal(layout.rows[0].displayPinName, 'PA0');
 	assert.equal(layout.rows[0].disableFunction, 'ADC0-2');
 	assert.equal(layout.rows[0].row.pinName, 'GPADC0-2/PA0');
+	assert.equal(layout.rows[0].pinNumber, '1');
+});
+
+test('PIN column supplies package pin numbers and is excluded from mux functions', () => {
+	const table = parsePinmuxCsv([
+		'Pin Name,PIN,IO Type,Function2,Function14',
+		'PA0,D10,I/O,GPADC1_1,PA_EINT0',
+		'PA1,B5,I/O,NCSI_D8,PA_EINT1',
+	].join('\n'));
+	assert.deepEqual(table.functionHeaders, ['Function2', 'Function14']);
+	assert.deepEqual(table.rows.map(row => row.pinNumber), ['D10', 'B5']);
+	assert.deepEqual(table.rows[0].muxValues, ['GPADC1_1', 'PA_EINT0']);
+
+	const layout = createSymbolLayout(table);
+	assert.deepEqual(layout.rows.map(row => row.pinNumber), ['D10', 'B5']);
+	const source = generateSymbolSource(table, { name: 'PIN_NUMBER_TEST' });
+	assert.match(source, /"key":"NUMBER","value":"D10"/);
+	assert.match(source, /"key":"NUMBER","value":"B5"/);
+});
+
+test('legacy CSV without a PIN column keeps sequential pin numbers', () => {
+	const table = parsePinmuxCsv([
+		'Pin Name,IO Type,Function2',
+		'PA0,I/O,UART0_TX',
+		'PA1,I/O,UART0_RX',
+	].join('\n'));
+	assert.deepEqual(table.rows.map(row => row.pinNumber), ['1', '2']);
 });
 
 test('every generated geometry coordinate is aligned to the 100 mil grid', async () => {

@@ -1,5 +1,6 @@
 export interface PinmuxRow {
 	pinName: string;
+	pinNumber: string;
 	ioType: string;
 	functions: Array<string>;
 	muxValues: Array<string>;
@@ -115,7 +116,8 @@ interface SourceRecord {
 }
 
 const HEADER_ALIASES = {
-	pinName: ['pin name', 'pin', 'name', 'pin_name'],
+	pinName: ['pin name', 'pin_name', 'name'],
+	pinNumber: ['pin number', 'pin_number', 'pin no', 'pin_no', 'ball', 'pad', 'pin'],
 	ioType: ['io type', 'i/o type', 'type', 'direction', 'io'],
 };
 
@@ -223,7 +225,9 @@ export function parsePinmuxCsv(input: string): PinmuxTable {
 	}
 
 	const headers = records[0].map(value => value.trim());
-	const pinNameIndex = findHeader(headers, HEADER_ALIASES.pinName);
+	const explicitPinNameIndex = findHeader(headers, HEADER_ALIASES.pinName);
+	const pinNameIndex = explicitPinNameIndex >= 0 ? explicitPinNameIndex : findHeader(headers, ['pin']);
+	const pinNumberIndex = explicitPinNameIndex >= 0 ? findHeader(headers, HEADER_ALIASES.pinNumber) : -1;
 	const ioTypeIndex = findHeader(headers, HEADER_ALIASES.ioType);
 	if (pinNameIndex < 0 || ioTypeIndex < 0) {
 		throw new Error('CSV 必须包含 Pin Name 和 IO Type 两列表头。');
@@ -231,7 +235,7 @@ export function parsePinmuxCsv(input: string): PinmuxTable {
 
 	const functionIndexes = headers
 		.map((_, index) => index)
-		.filter(index => index !== pinNameIndex && index !== ioTypeIndex);
+		.filter(index => index !== pinNameIndex && index !== pinNumberIndex && index !== ioTypeIndex);
 	const rows: Array<PinmuxRow> = [];
 	for (const values of records.slice(1)) {
 		const pinName = (values[pinNameIndex] ?? '').trim();
@@ -242,6 +246,7 @@ export function parsePinmuxCsv(input: string): PinmuxTable {
 		const functions = muxValues.filter(Boolean);
 		rows.push({
 			pinName,
+			pinNumber: (pinNumberIndex >= 0 ? values[pinNumberIndex] ?? '' : '').trim() || String(rows.length + 1),
 			ioType: (values[ioTypeIndex] ?? '').trim(),
 			functions: [...new Set(functions)],
 			muxValues,
@@ -441,7 +446,7 @@ export function createSymbolLayout(table: PinmuxTable, overrides: SymbolLayoutOv
 			pinX: bodyRight + options.pinLength,
 			pinNameX: (pinColumn?.x ?? bodyX) + (pinColumn?.width ?? 0) - options.cellPadding,
 			pinNumberX: bodyRight,
-			pinNumber: String(index + 1),
+			pinNumber: row.pinNumber || String(index + 1),
 			displayPinName,
 			disableFunction,
 		}));

@@ -491,8 +491,8 @@ async function createPrimitives(
 		await createTableLine(bank.bodyX, bank.headerBottomY, bodyRight, bank.headerBottomY, options.mutedColor, options.headerLineWidth);
 
 		for (const placement of bank.rows) {
-			const { index, row, y, pinX, displayPinName, disableFunction } = placement;
-			const pin = await eda.sch_PrimitivePin.create(pinX, y, String(index + 1), displayPinName, 0, layout.pinLength, options.pinColor, ESCH_PrimitivePinShape.NONE, pinType(row.ioType));
+			const { index, row, y, pinX, pinNumber, displayPinName, disableFunction } = placement;
+			const pin = await eda.sch_PrimitivePin.create(pinX, y, pinNumber, displayPinName, 0, layout.pinLength, options.pinColor, ESCH_PrimitivePinShape.NONE, pinType(row.ioType));
 			if (!pin) {
 				throw new Error(`无法创建第 ${index + 1} 个引脚“${row.pinName}”。`);
 			}

@@ -13,16 +13,16 @@ A JLCEDA / EasyEDA Pro extension: it reads a pinmux CSV and generates a device a
    npm run build
    ```
 
-2. Import `build/dist/pinmux2symbol_v1.1.8.eext` in the EasyEDA Pro extension manager.
+2. Import `build/dist/pinmux2symbol_v1.1.9.eext` in the EasyEDA Pro extension manager.
 3. Open the configuration and preview window from the top menu `Pinmux2Symbol -> 从 CSV 生成器件和符号` (Generate device and symbol from CSV).
 4. Pick a CSV and adjust the global dimensions, font sizes, line widths and colors. The right-hand pane previews the result in real time using the actual pinmux data.
 5. Click “生成器件和符号”. The extension creates the personal-library symbol, writes every pin and multiplexing function, then creates a device with the same name and binds it to that symbol.
 
-The first row must contain `Pin Name` and `IO Type`; every other column is treated as a multiplexing function column. [`reference/pinout.csv`](./reference/pinout.csv) in this repository can be imported directly.
+The first row must contain `Pin Name` and `IO Type`. An optional `PIN` column supplies the package pin number (for example, `D10` or `B5`); all remaining columns are treated as multiplexing function columns. Legacy CSV files without `PIN` continue to use sequential pin numbers. [`reference/pinout.csv`](./reference/pinout.csv) in this repository can be imported directly.
 
 The generated symbol contains:
 
-- one uniquely numbered PIN per CSV row;
+- one uniquely numbered PIN per CSV row, using the optional `PIN` column as its package pin number;
 - `Pin Name` as the pin name, with `IO Type` mapped to an input, output or bidirectional electrical type;
 - `FunctionN` columns shown as separate `MUXN` table columns in their original positions, with empty cells keeping their alignment;
 - composite Pin Names split into a `DISABLE` function and the main PIN name;

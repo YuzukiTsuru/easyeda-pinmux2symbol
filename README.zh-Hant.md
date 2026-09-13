@@ -13,16 +13,16 @@
    npm run build
    ```
 
-2. 在 嘉立創EDA 專業版的擴展程式管理員中匯入 `build/dist/pinmux2symbol_v1.1.8.eext`。
+2. 在 嘉立創EDA 專業版的擴展程式管理員中匯入 `build/dist/pinmux2symbol_v1.1.9.eext`。
 3. 從頂部選單 `Pinmux2Symbol -> 从 CSV 生成器件和符号` 開啟設定與預覽視窗。
 4. 選擇 CSV，調整全域尺寸、字型大小、線寬與顏色。右側會以真實 pinmux 資料即時預覽結果。
 5. 點選「生成器件和符号」。擴展程式會建立個人庫符號、寫入所有引腳與複用功能，再建立同名器件並關聯該符號。
 
-第一列必須包含 `Pin Name` 與 `IO Type`，其他欄位會被視為複用功能欄。倉庫中的 [`reference/pinout.csv`](./reference/pinout.csv) 可直接匯入。
+第一列必須包含 `Pin Name` 與 `IO Type`。可選的 `PIN` 欄位用作封裝引腳編號（例如 `D10`、`B5`），其他欄位會被視為複用功能欄；舊 CSV 沒有 `PIN` 欄位時會繼續使用順序編號。倉庫中的 [`reference/pinout.csv`](./reference/pinout.csv) 可直接匯入。
 
 產生的符號包含：
 
-- 每個 CSV 列一個編號唯一的 PIN；
+- 每個 CSV 列一個編號唯一的 PIN；可選的 `PIN` 欄位作為其封裝引腳編號；
 - `Pin Name` 作為引腳名稱，`IO Type` 對應為輸入、輸出或雙向電氣類型；
 - `FunctionN` 欄依原位置顯示為獨立的 `MUXN` 表格欄，空儲存格保持對齊；
 - 複合 Pin Name 拆分為 `DISABLE` 功能與主 PIN 名稱；

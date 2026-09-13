@@ -13,16 +13,16 @@
    npm run build
    ```
 
-2. 在 EasyEDA 专业版的扩展管理器中导入 `build/dist/pinmux2symbol_v1.1.8.eext`。
+2. 在 EasyEDA 专业版的扩展管理器中导入 `build/dist/pinmux2symbol_v1.1.9.eext`。
 3. 从顶部菜单 `Pinmux2Symbol -> 从 CSV 生成器件和符号` 打开配置与预览窗口。
 4. 选择 CSV，调整全局尺寸、字体大小、线宽和颜色。右侧会用真实 pinmux 数据实时预览结果。
 5. 点击“生成器件和符号”。扩展会创建个人库符号、写入所有引脚和复用功能，再创建同名器件并关联该符号。
 
-第一行必须包含 `Pin Name` 和 `IO Type`，其它列会被当作复用功能列。仓库中的 [`reference/pinout.csv`](./reference/pinout.csv) 可直接导入。
+第一行必须包含 `Pin Name` 和 `IO Type`。可选的 `PIN` 列用作封装引脚编号（例如 `D10`、`B5`），其它列会被当作复用功能列；旧 CSV 没有 `PIN` 列时会继续使用顺序编号。仓库中的 [`reference/pinout.csv`](./reference/pinout.csv) 可直接导入。
 
 生成的符号包含：
 
-- 每个 CSV 行一个编号唯一的 PIN；
+- 每个 CSV 行一个编号唯一的 PIN；可选的 `PIN` 列作为其封装引脚编号；
 - `Pin Name` 作为引脚名称，`IO Type` 映射为输入、输出或双向电气类型；
 - `FunctionN` 列按原位置显示为独立的 `MUXN` 表格列，空单元格保持对齐；
 - 复合 Pin Name 拆分为 `DISABLE` 功能和主 PIN 名称；
