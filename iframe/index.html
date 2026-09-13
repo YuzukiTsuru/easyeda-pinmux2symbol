@@ -73,6 +73,12 @@
 					</section>
 
 					<section class="config-section">
+						<h2>电源 IO</h2>
+						<div class="field field-wide field-toggle"><label for="powerRowEnabled">每个 Bank 预留一行空白</label><input id="powerRowEnabled" data-option="powerRowEnabled" data-kind="boolean" type="checkbox" /></div>
+						<div class="field"><label for="powerRowHeight">预留行高度</label><input id="powerRowHeight" data-option="powerRowHeight" data-kind="grid" type="number" min="1" max="10" step="1" value="1" /><output class="unit" data-unit-for="powerRowHeight">2.54 mm</output></div>
+					</section>
+
+					<section class="config-section">
 						<h2>字体</h2>
 						<div class="field"><label for="titleFontSize">主标题</label><input id="titleFontSize"
 								data-option="titleFontSize" data-kind="font" type="number" min="0.06" max="0.24"

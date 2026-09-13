@@ -166,6 +166,17 @@ input:disabled {
 	grid-template-columns: 92px minmax(0, 1fr);
 }
 
+.field-toggle {
+	grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.field-toggle input[type="checkbox"] {
+	width: 18px;
+	height: 18px;
+	margin: 0;
+	justify-self: end;
+}
+
 .field > label {
 	min-width: 0;
 	line-height: 1.25;

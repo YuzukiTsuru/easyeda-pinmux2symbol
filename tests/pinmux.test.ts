@@ -7,6 +7,7 @@ import { errorMessage, isDuplicateLibraryNameError } from '../src/generator.js';
 import {
 	createSymbolLayout,
 	fontSizeInches,
+	generateSymbolSource,
 	normalizeSymbolLayoutOptions,
 	parsePinmuxCsv,
 	SYMBOL_GRID,
@@ -38,7 +39,7 @@ test('every generated geometry coordinate is aligned to the 100 mil grid', async
 	layoutValues.forEach((value, index) => assertGridAligned(value, `layout[${index}]`));
 
 	for (const bank of layout.banks) {
-		[bank.bodyX, bank.bodyY, bank.bodyWidth, bank.bodyHeight, bank.labelY, bank.headerY, bank.headerBottomY]
+		[bank.bodyX, bank.bodyY, bank.bodyWidth, bank.bodyHeight, bank.reservedRowHeight, bank.reservedRowBottomY, bank.labelY, bank.headerY, bank.headerBottomY]
 			.forEach((value, index) => assertGridAligned(value, `${bank.name}.geometry[${index}]`));
 		for (const column of bank.columns) {
 			assertGridAligned(column.x, `${bank.name}.${column.label}.x`);
@@ -51,6 +52,42 @@ test('every generated geometry coordinate is aligned to the 100 mil grid', async
 			assertGridAligned(row.pinNumberX, `${bank.name}.${row.displayPinName}.pinNumberX`);
 		}
 	}
+	for (const bank of layout.banks) {
+		assertGridAligned(bank.reservedRowHeight, `${bank.name}.reservedRowHeight`);
+	}
+});
+
+test('power row reserves one blank row in every Bank', async () => {
+	const table = await referenceTable();
+	const enabled = createSymbolLayout(table);
+	assert.equal(enabled.options.powerRowEnabled, false);
+	assert.equal(enabled.options.powerRowHeight, 10);
+
+	const disabled = createSymbolLayout(table, { powerRowEnabled: false });
+	const reserved = createSymbolLayout(table, { powerRowEnabled: true });
+	assert.equal(enabled.banks.length, disabled.banks.length);
+	assert.equal(reserved.bodyHeight, disabled.bodyHeight + reserved.banks.length * 10);
+	for (let index = 0; index < reserved.banks.length; index++) {
+		const enabledBank = reserved.banks[index];
+		const disabledBank = disabled.banks[index];
+		assert.equal(enabledBank.reservedRowHeight, 10);
+		assert.equal(disabledBank.reservedRowHeight, 0);
+		assert.equal(enabledBank.bodyWidth, disabledBank.bodyWidth, 'reserved row must not widen a Bank');
+		assert.equal(enabledBank.bodyHeight, disabledBank.bodyHeight + 10);
+		assert.equal(enabledBank.reservedRowBottomY, enabledBank.bodyY - enabledBank.reservedRowHeight);
+		assert.equal(disabledBank.reservedRowBottomY, disabledBank.bodyY);
+		assert.equal(enabledBank.bodyY - enabledBank.headerBottomY, disabledBank.bodyY - disabledBank.headerBottomY + 10);
+		assert.equal(enabledBank.headerBottomY - enabledBank.rows[0].y, disabledBank.headerBottomY - disabledBank.rows[0].y);
+	}
+});
+
+test('generated symbol source leaves the reserved row blank', async () => {
+	const table = await referenceTable();
+	const source = generateSymbolSource(table, { name: 'POWER_TEST' });
+	assert.match(source, /POWER_TEST\s+\|\s+56 pins/);
+	assert.doesNotMatch(source, /POWER \(1V8 Only\)|VDD18-DRAM|J11/);
+	assert.equal((source.match(/"type":"PIN"/g) ?? []).length, table.rows.length);
+	assert.equal((generateSymbolSource(table, { powerRowEnabled: false }).match(/"type":"PIN"/g) ?? []).length, table.rows.length);
 });
 
 test('arbitrary geometry settings are normalized before layout', async () => {

@@ -1,4 +1,4 @@
-import type { PinmuxTable, SymbolLayoutOptions, SymbolLayoutOverrides, SymbolLayoutRow } from './pinmux';
+import type { PinmuxTable, SymbolLayoutOptions, SymbolLayoutOverrides } from './pinmux.js';
 import { createSymbolLayout, electricType, fontSizeInches } from './pinmux.js';
 
 export interface GenerationProgress {
@@ -264,7 +264,15 @@ async function createTableLine(x1: number, y1: number, x2: number, y2: number, c
 
 interface PendingPinStyle {
 	pin: ISCH_PrimitivePin;
-	placement: SymbolLayoutRow;
+	placement: PinStylePlacement;
+}
+
+interface PinStylePlacement {
+	y: number;
+	pinNameX: number;
+	pinNumberX: number;
+	pinNumber: string;
+	displayPinName: string;
 }
 
 interface PinTextAttributes {
@@ -291,7 +299,7 @@ function pinAttributeKind(attribute: ISCH_PrimitiveAttribute, pending: PendingPi
 		if (value === pending.placement.displayPinName) {
 			return 'name';
 		}
-		if (value === String(pending.placement.index + 1)) {
+		if (value === pending.placement.pinNumber) {
 			return 'number';
 		}
 	}
@@ -477,7 +485,10 @@ async function createPrimitives(
 			}
 		}
 
-		await createTableLine(bank.bodyX, bank.headerBottomY, bodyRight, bank.headerBottomY, options.accentColor, options.headerLineWidth);
+		if (bank.reservedRowHeight > 0) {
+			await createTableLine(bank.bodyX, bank.reservedRowBottomY, bodyRight, bank.reservedRowBottomY, options.mutedColor, options.headerLineWidth);
+		}
+		await createTableLine(bank.bodyX, bank.headerBottomY, bodyRight, bank.headerBottomY, options.mutedColor, options.headerLineWidth);
 
 		for (const placement of bank.rows) {
 			const { index, row, y, pinX, displayPinName, disableFunction } = placement;
@@ -534,7 +545,8 @@ export async function createSymbolAndDevice(
 		}
 		console.warn('[Pinmux2Symbol] Failed to preflight personal-library name; continuing with EasyEDA create:', error);
 	}
-	const description = `Generated from ${fileName}; ${table.rows.length} pin(s), ${table.functionHeaders.length} mux column(s)`;
+	const generatedPinCount = table.rows.length;
+	const description = `Generated from ${fileName}; ${generatedPinCount} pin(s), ${table.functionHeaders.length} mux column(s)`;
 	let symbolUuid: string | undefined;
 	try {
 		symbolUuid = await eda.lib_Symbol.create(libraryUuid, symbolName, [], ELIB_SymbolType.COMPONENT, description);
@@ -609,5 +621,5 @@ export async function createSymbolAndDevice(
 	}
 	reportProgress(100, `已生成 ${symbolName}`, onProgress);
 	eda.sys_LoadingAndProgressBar.destroyProgressBar();
-	eda.sys_Message.showToastMessage(`已生成器件“${symbolName}”并关联同名符号，共 ${table.rows.length} 个引脚。`);
+	eda.sys_Message.showToastMessage(`已生成器件“${symbolName}”并关联同名符号，共 ${generatedPinCount} 个引脚。`);
 }

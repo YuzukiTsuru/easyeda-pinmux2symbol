@@ -3,7 +3,7 @@
 	"uuid": "525abe4b26714316be037c2e88353a10",
 	"displayName": "Pinmux2Symbol",
 	"description": "Import a pinmux CSV and generate an EasyEDA device with an editable schematic symbol.",
-	"version": "1.1.4",
+	"version": "1.1.8",
 	"publisher": "easyeda-pinmux2symbol",
 	"engines": {
 		"eda": "^3.2.0"

@@ -20,6 +20,7 @@ test('configurator assets use extension-root paths and controls have fallback de
 		disableColumnMinWidth: '7',
 		pinColumnMinWidth: '5',
 		minBodyWidth: '0',
+		powerRowHeight: '1',
 		titleFontSize: '0.12',
 		bankFontSize: '0.10',
 		headerFontSize: '0.09',
@@ -36,6 +37,9 @@ test('configurator assets use extension-root paths and controls have fallback de
 	};
 
 	for (const [id, value] of Object.entries(expectedDefaults)) {
-		assert.match(html, new RegExp(`<input\\s+id="${id}"[^>]*\\s+value="${value}"`), `${id} should default to ${value}`);
+		const escapedValue = value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+		assert.match(html, new RegExp(`<input\\s+id="${id}"[^>]*\\s+value="${escapedValue}"`), `${id} should default to ${value}`);
 	}
+	assert.doesNotMatch(html, /<input\s+id="powerRowEnabled"[^>]*checked/, 'power row should be disabled by default');
+	assert.doesNotMatch(html, /id="powerLabel"|id="powerPinName"|id="powerPinNumber"/, 'power row should not prefill content fields');
 });

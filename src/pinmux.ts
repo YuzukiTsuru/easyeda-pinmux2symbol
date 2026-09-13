@@ -34,6 +34,8 @@ export interface SymbolLayoutOptions {
 	disableColumnMinWidth: number;
 	pinColumnMinWidth: number;
 	minBodyWidth: number;
+	powerRowEnabled: boolean;
+	powerRowHeight: number;
 	titleFontSize: number;
 	bankFontSize: number;
 	headerFontSize: number;
@@ -66,6 +68,7 @@ export interface SymbolLayoutRow {
 	pinX: number;
 	pinNameX: number;
 	pinNumberX: number;
+	pinNumber: string;
 	displayPinName: string;
 	disableFunction: string;
 }
@@ -84,6 +87,8 @@ export interface SymbolLayoutBank {
 	bodyY: number;
 	bodyWidth: number;
 	bodyHeight: number;
+	reservedRowHeight: number;
+	reservedRowBottomY: number;
 	labelY: number;
 	headerY: number;
 	headerBottomY: number;
@@ -126,6 +131,8 @@ export const DEFAULT_SYMBOL_LAYOUT_OPTIONS: Readonly<SymbolLayoutOptions> = Obje
 	disableColumnMinWidth: 70,
 	pinColumnMinWidth: 50,
 	minBodyWidth: 0,
+	powerRowEnabled: false,
+	powerRowHeight: 10,
 	titleFontSize: 12,
 	bankFontSize: 10,
 	headerFontSize: 9,
@@ -286,6 +293,10 @@ function scalarOption(value: unknown, fallback: number, minimum: number, maximum
 	return Math.round(clamp(finiteNumber(value, fallback), minimum, maximum));
 }
 
+function booleanOption(value: unknown, fallback: boolean): boolean {
+	return typeof value === 'boolean' ? value : fallback;
+}
+
 function fontOption(value: unknown, fallback: number, minimum: number, maximum: number): number {
 	const numeric = finiteNumber(value, fallback);
 	// Accept both the legacy layout value (8) and the inch value (0.08) from
@@ -315,6 +326,8 @@ export function normalizeSymbolLayoutOptions(overrides: SymbolLayoutOverrides = 
 		disableColumnMinWidth: gridOption(overrides.disableColumnMinWidth, defaults.disableColumnMinWidth, 40, 400),
 		pinColumnMinWidth: gridOption(overrides.pinColumnMinWidth, defaults.pinColumnMinWidth, 30, 300),
 		minBodyWidth: gridOption(overrides.minBodyWidth, defaults.minBodyWidth, 0, 1600),
+		powerRowEnabled: booleanOption(overrides.powerRowEnabled, defaults.powerRowEnabled),
+		powerRowHeight: gridOption(overrides.powerRowHeight, defaults.powerRowHeight, 10, 100),
 		titleFontSize: fontOption(overrides.titleFontSize, defaults.titleFontSize, 6, 24),
 		bankFontSize: fontOption(overrides.bankFontSize, defaults.bankFontSize, 6, 20),
 		headerFontSize: fontOption(overrides.headerFontSize, defaults.headerFontSize, 6, 20),
@@ -398,14 +411,16 @@ export function createSymbolLayout(table: PinmuxTable, overrides: SymbolLayoutOv
 			bankRows,
 			columnDefinitions,
 			bodyWidth,
-			bodyHeight: options.headerHeight + (bankRows.length + 1) * options.rowPitch,
+			bodyHeight: options.headerHeight + (bankRows.length + 1) * options.rowPitch + (options.powerRowEnabled ? options.powerRowHeight : 0),
 		};
 	});
 
-	const bodyWidth = bankDrafts.reduce((width, bank) => Math.max(width, bank.bodyWidth), 0);
+	const bodyWidth = Math.max(options.minBodyWidth, ...bankDrafts.map(bank => bank.bodyWidth));
 	const bodyHeight = bankDrafts.reduce((height, bank) => height + bank.bodyHeight, 0) + Math.max(0, bankDrafts.length - 1) * options.bankGap;
 	let bankTop = Math.ceil(bodyHeight / (SYMBOL_GRID * 2)) * SYMBOL_GRID;
 	const firstBankTop = bankTop;
+	const overallBodyX = -Math.floor(bodyWidth / (SYMBOL_GRID * 2)) * SYMBOL_GRID;
+	const reservedRowHeight = options.powerRowEnabled ? options.powerRowHeight : 0;
 	const banks = bankDrafts.map((draft) => {
 		const bodyX = -Math.floor(draft.bodyWidth / (SYMBOL_GRID * 2)) * SYMBOL_GRID;
 		let columnX = bodyX;
@@ -414,7 +429,8 @@ export function createSymbolLayout(table: PinmuxTable, overrides: SymbolLayoutOv
 			columnX += column.width;
 			return layoutColumn;
 		});
-		const headerBottomY = bankTop - options.headerHeight;
+		const headerTopY = bankTop - reservedRowHeight;
+		const headerBottomY = headerTopY - options.headerHeight;
 		const pinColumn = columns.at(-1);
 		const bodyRight = bodyX + draft.bodyWidth;
 		const rows = draft.bankRows.map(({ row, index, displayPinName, disableFunction }, bankRowIndex) => ({
@@ -425,6 +441,7 @@ export function createSymbolLayout(table: PinmuxTable, overrides: SymbolLayoutOv
 			pinX: bodyRight + options.pinLength,
 			pinNameX: (pinColumn?.x ?? bodyX) + (pinColumn?.width ?? 0) - options.cellPadding,
 			pinNumberX: bodyRight,
+			pinNumber: String(index + 1),
 			displayPinName,
 			disableFunction,
 		}));
@@ -434,8 +451,10 @@ export function createSymbolLayout(table: PinmuxTable, overrides: SymbolLayoutOv
 			bodyY: bankTop,
 			bodyWidth: draft.bodyWidth,
 			bodyHeight: draft.bodyHeight,
+			reservedRowHeight,
+			reservedRowBottomY: headerTopY,
 			labelY: bankTop + SYMBOL_GRID,
-			headerY: bankTop - snapToSymbolGrid(options.headerHeight / 2),
+			headerY: headerTopY - snapToSymbolGrid(options.headerHeight / 2),
 			headerBottomY,
 			columns,
 			rows,
@@ -445,7 +464,7 @@ export function createSymbolLayout(table: PinmuxTable, overrides: SymbolLayoutOv
 	});
 
 	return {
-		bodyX: -Math.floor(bodyWidth / (SYMBOL_GRID * 2)) * SYMBOL_GRID,
+		bodyX: overallBodyX,
 		bodyY: firstBankTop,
 		bodyWidth,
 		bodyHeight,
@@ -568,7 +587,7 @@ export function generateSymbolSource(table: PinmuxTable, sourceOptions: SymbolSo
 		}
 
 		for (const placement of bank.rows) {
-			const { index, row, y, pinX, pinNameX, pinNumberX, displayPinName, disableFunction } = placement;
+			const { index, row, y, pinX, pinNameX, pinNumberX, pinNumber, displayPinName, disableFunction } = placement;
 			const pinId = id('pin-', index);
 			records.push(record('PIN', primitivePayload(partId, 2.1, {
 				display: true,
@@ -581,7 +600,7 @@ export function generateSymbolSource(table: PinmuxTable, sourceOptions: SymbolSo
 				pinShape: 0,
 			}), pinId));
 			records.push(record('ATTR', attribute(partId, pinId, 'NAME', displayPinName, pinNameX, y, 2, options.pinNameFontSize, options.titleColor), id('name-', index)));
-			records.push(record('ATTR', attribute(partId, pinId, 'NUMBER', String(index + 1), pinNumberX, y, 0, options.pinNumberFontSize, options.mutedColor), id('number-', index)));
+			records.push(record('ATTR', attribute(partId, pinId, 'NUMBER', pinNumber, pinNumberX, y, 0, options.pinNumberFontSize, options.mutedColor), id('number-', index)));
 
 			for (const [columnIndex, column] of bank.columns.entries()) {
 				const value = column.kind === 'mux' ? row.muxValues[column.muxIndex ?? -1] ?? '' : column.kind === 'disable' ? disableFunction : '';

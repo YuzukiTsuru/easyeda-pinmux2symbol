@@ -12,7 +12,7 @@ import {
 } from './pinmux';
 
 const CONFIGURATOR_IFRAME_ID = 'pinmux2symbol-configurator';
-const CONFIG_STORAGE_KEY = 'pinmux2symbol.layout.v2';
+const CONFIG_STORAGE_KEY = 'pinmux2symbol.layout.v4';
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 const UNIT_MM = 0.254;
 
@@ -124,7 +124,10 @@ function syncOptionInputs(): void {
 	for (const input of optionInputs) {
 		const key = input.dataset.option as keyof SymbolLayoutOptions;
 		const value = state.options[key];
-		if (typeof value === 'number') {
+		if (input.dataset.kind === 'boolean') {
+			input.checked = Boolean(value);
+		}
+		else if (typeof value === 'number') {
 			if (input.dataset.kind === 'grid') {
 				input.value = String(value / SYMBOL_GRID);
 			}
@@ -136,7 +139,7 @@ function syncOptionInputs(): void {
 			}
 		}
 		else {
-			input.value = value;
+			input.value = String(value);
 		}
 		if (input.dataset.kind === 'grid') {
 			const output = document.querySelector<HTMLOutputElement>(`[data-unit-for="${key}"]`);
@@ -154,13 +157,16 @@ function syncOptionInputs(): void {
 }
 
 function readOptionInputs(): SymbolLayoutOptions {
-	const raw: Record<string, number | string> = {};
+	const raw: Record<string, boolean | number | string> = {};
 	for (const input of optionInputs) {
 		const key = input.dataset.option;
 		if (!key) {
 			continue;
 		}
-		if (input.dataset.kind === 'color') {
+		if (input.dataset.kind === 'boolean') {
+			raw[key] = input.checked;
+		}
+		else if (input.dataset.kind === 'color' || input.dataset.kind === 'text') {
 			raw[key] = input.value;
 		}
 		else {
@@ -321,12 +327,23 @@ function drawPreview(layout: SymbolLayout, symbolName: string): void {
 			);
 		}
 
+		if (bank.reservedRowHeight > 0) {
+			drawing.append(createSvgElement('line', {
+				'x1': bank.bodyX,
+				'y1': -bank.reservedRowBottomY,
+				'x2': bodyRight,
+				'y2': -bank.reservedRowBottomY,
+				'stroke': options.mutedColor,
+				'stroke-width': options.headerLineWidth,
+				'vector-effect': 'non-scaling-stroke',
+			}));
+		}
 		drawing.append(createSvgElement('line', {
 			'x1': bank.bodyX,
 			'y1': -bank.headerBottomY,
 			'x2': bodyRight,
 			'y2': -bank.headerBottomY,
-			'stroke': options.accentColor,
+			'stroke': options.mutedColor,
 			'stroke-width': options.headerLineWidth,
 			'vector-effect': 'non-scaling-stroke',
 		}));
