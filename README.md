@@ -1,59 +1,44 @@
-[简体中文](#) | [English](./README.en.md) | [繁體中文](./README.zh-Hant.md) | [日本語](./README.ja.md) | [Русский](./README.ru.md)
+# Pinmux2Symbol
 
-# pro-api-sdk
+嘉立创EDA / EasyEDA 专业版扩展：读取 pinmux CSV，在当前工作区的个人库中生成器件及其关联的可编辑原理图符号。
 
-嘉立创EDA & EasyEDA 专业版扩展 API 开发工具
+## 使用
 
-<a href="https://github.com/easyeda/pro-api-sdk" style="vertical-align: inherit;" target="_blank"><img src="https://img.shields.io/github/stars/easyeda/pro-api-sdk" alt="GitHub Repo Stars" class="not-medium-zoom-image" style="display: inline; vertical-align: inherit;" /></a>&nbsp;<a href="https://github.com/easyeda/pro-api-sdk/issues" style="vertical-align: inherit;" target="_blank"><img src="https://img.shields.io/github/issues/easyeda/pro-api-sdk" alt="GitHub Issues" class="not-medium-zoom-image" style="display: inline; vertical-align: inherit;" /></a>&nbsp;<a href="https://github.com/easyeda/pro-api-sdk" style="vertical-align: inherit;" target="_blank"><img src="https://img.shields.io/github/repo-size/easyeda/pro-api-sdk" alt="GitHub Repo Size" class="not-medium-zoom-image" style="display: inline; vertical-align: inherit;" /></a>&nbsp;<a href="https://choosealicense.com/licenses/apache-2.0/" style="vertical-align: inherit;" target="_blank"><img src="https://img.shields.io/github/license/easyeda/pro-api-sdk" alt="GitHub License" class="not-medium-zoom-image" style="display: inline; vertical-align: inherit;" /></a>&nbsp;<a href="https://www.npmjs.com/package/@jlceda/pro-api-types" style="vertical-align: inherit;" target="_blank"><img src="https://img.shields.io/npm/v/%40jlceda%2Fpro-api-types?label=pro-api-types" alt="NPM Version" class="not-medium-zoom-image" style="display: inline; vertical-align: inherit;" /></a>&nbsp;<a href="https://www.npmjs.com/package/@jlceda/pro-api-types" style="vertical-align: inherit;" target="_blank"><img src="https://img.shields.io/npm/d18m/%40jlceda%2Fpro-api-types" alt="NPM Downloads" class="not-medium-zoom-image" style="display: inline; vertical-align: inherit;" /></a>
+1. 安装依赖并构建扩展：
 
-> [!NOTE]
->
-> 详细开发文档请访问：[https://prodocs.lceda.cn/cn/api/guide/](https://prodocs.lceda.cn/cn/api/guide/)
+   ```shell
+   npm install
+   npm run build
+   ```
 
-## 进入开发
+2. 在 EasyEDA 专业版的扩展管理器中导入 `build/dist/pinmux2symbol_v1.1.4.eext`。
+3. 从顶部菜单 `Pinmux2Symbol -> 从 CSV 生成器件和符号` 打开配置与预览窗口。
+4. 选择 CSV，调整全局尺寸、字体大小、线宽和颜色。右侧会用真实 pinmux 数据实时预览结果。
+5. 点击“生成器件和符号”。扩展会创建个人库符号、写入所有引脚和复用功能，再创建同名器件并关联该符号。
 
-本开发工具组包含了用于开发 [嘉立创EDA专业版](https://pro.lceda.cn/) 扩展包的所有环境和工具，并内置了 ESLint 的推荐规则。
+第一行必须包含 `Pin Name` 和 `IO Type`，其它列会被当作复用功能列。仓库中的 [`reference/pinout.csv`](./reference/pinout.csv) 可直接导入。
 
-1. 克隆 [pro-api-sdk](https://github.com/easyeda/pro-api-sdk) 项目仓库到本地
+生成的符号包含：
 
-    Gitee:
+- 每个 CSV 行一个编号唯一的 PIN；
+- `Pin Name` 作为引脚名称，`IO Type` 映射为输入、输出或双向电气类型；
+- `FunctionN` 列按原位置显示为独立的 `MUXN` 表格列，空单元格保持对齐；
+- 复合 Pin Name 拆分为 `DISABLE` 功能和主 PIN 名称；
+- PA、PB、PC 等 Bank 分别生成独立的紧凑表格，并仅保留该 Bank 使用的 MUX 列；列之间使用留白对齐，不绘制竖向分隔线；
+- 全部表格文字使用加粗 `Courier New`；配置页显示英寸（默认引脚名称为 `0.08 inch`），引脚属性调用 API 时换算为英寸，普通文本保留符号内部字号单位；
+- 所有外框、文字锚点、引脚和表头横线严格对齐 100 mil（2.54 mm）网格；
+- 所有 Bank 使用一套全局配置，配置会在扩展中自动保存；
+- 可编辑的芯片外框、标题和引脚号/名称属性。
+- 同名器件，默认位号为 `U`，加入 BOM，并绑定生成的原理图符号。
 
-    ```shell
-    git clone --depth=1 https://gitee.com/jlceda/pro-api-sdk.git
-    ```
+## 开发检查
 
-    GitHub:
+```shell
+npm run lint
+npm test
+npm run build
+```
 
-    ```shell
-    git clone --depth=1 https://github.com/easyeda/pro-api-sdk.git
-    ```
+源码生成器位于 [`src/pinmux.ts`](./src/pinmux.ts)，不依赖 EasyEDA 运行时，可单独测试 CSV 解析和符号源码结构。
 
-2. 初始化开发环境（安装依赖）
-
-    ```shell
-    npm install
-    ```
-
-3. 进行些许变更 ...
-
-    - 修改文件夹名称为你的项目名称
-    - 参考 [开发指南](https://prodocs.lceda.cn/cn/api/guide/how-to-start.html#ii-%E6%89%A9%E5%B1%95%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6) 修改 `extension.json` 中的 `name`、`displayName`、`description`、`publisher` 字段
-    - 结合 [扩展 API 参考文档](https://prodocs.lceda.cn/cn/api/reference/pro-api.html) 编写你的代码
-
-> [!NOTE]
->
-> 推荐使用 AI 编程工具，结合官方 SKILL 加快开发进度。详情请查阅：[easyeda-api-skill](https://github.com/easyeda/easyeda-api-skill)
-
-4. 编译扩展包
-
-    ```shell
-    npm run build
-    ```
-
-5. 在 嘉立创EDA专业版 中安装生成在 `./build/dist/` 下的扩展包
-
-## 开源许可
-
-<a href="https://choosealicense.com/licenses/apache-2.0/" style="vertical-align: inherit;" target="_blank"><img src="https://img.shields.io/github/license/easyeda/pro-api-sdk" alt="GitHub License" class="not-medium-zoom-image" style="display: inline; vertical-align: inherit;" /></a>
-
-本开发工具组使用 [Apache License 2.0](https://choosealicense.com/licenses/apache-2.0/) 开源许可协议，你仅可以将 **嘉立创EDA**、**EasyEDA** 商标信息用于依托于本工具组开发的扩展包的 **功能描述部分** 和 **开源发布的标题部分**。
+> 注意：pinmux 表只包含引脚和复用功能，无法推导 PCB 封装的焊盘尺寸、间距和外形；生成的器件不会自动绑定 PCB footprint，也不会默认转到 PCB。

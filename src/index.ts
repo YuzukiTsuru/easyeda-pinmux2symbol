@@ -1,29 +1,37 @@
-/**
- * 入口文件 / Entry File
- *
- * 本文件为默认扩展入口文件，如果你想要配置其它文件作为入口文件，
- * 请修改 `extension.json` 中的 `entry` 字段。
- * This is the default extension entry file. If you want to use another file as the entry,
- * please modify the `entry` field in `extension.json`.
- *
- * 请在此处使用 `export`  导出所有你希望在 `headerMenus` 中引用的方法，
- * 方法通过方法名与 `headerMenus` 关联。
- * Please use `export` here to export all methods you want to reference in `headerMenus`.
- * Methods are associated with `headerMenus` by their method names.
- *
- * 如需了解更多开发细节，请阅读：
- * https://prodocs.lceda.cn/cn/api/guide/
- * For more development details, please visit:
- * https://prodocs.easyeda.com/en/api/guide/
- */
+/** Pinmux CSV to EasyEDA schematic symbol extension. */
 import extensionConfig from '../extension.json' with { type: 'json' };
 
-// eslint-disable-next-line unused-imports/no-unused-vars
-export function activate(status?: 'onStartupFinished', arg?: string): void {}
+export const CONFIGURATOR_IFRAME_ID = 'pinmux2symbol-configurator';
+
+/** Open the configuration and live-preview workspace. */
+export async function importPinmuxCsv(): Promise<void> {
+	try {
+		await eda.sys_IFrame.closeIFrame(CONFIGURATOR_IFRAME_ID);
+		const opened = await eda.sys_IFrame.openIFrame('/iframe/index.html', 1200, 760, CONFIGURATOR_IFRAME_ID, {
+			title: 'Pinmux2Symbol 配置与预览',
+			maximizeButton: true,
+			minimizeButton: true,
+			minimizeStyle: 'constricted',
+			grayscaleMask: false,
+		});
+		if (!opened) {
+			throw new Error('无法打开 Pinmux2Symbol 配置窗口。');
+		}
+	}
+	catch (error: unknown) {
+		console.error('[Pinmux2Symbol] Failed to open configurator:', error);
+		const message = error instanceof Error ? error.message : '无法打开配置窗口。';
+		eda.sys_Dialog.showInformationMessage(message, 'Pinmux2Symbol');
+	}
+}
 
 export function about(): void {
 	eda.sys_Dialog.showInformationMessage(
-		eda.sys_I18n.text('EasyEDA extension SDK v', undefined, undefined, extensionConfig.version),
-		eda.sys_I18n.text('About'),
+		`${eda.sys_I18n.text('EasyEDA extension SDK v', undefined, undefined, extensionConfig.version)}\n\n导入 pinmux CSV，实时配置并预览严格对齐 100 mil 网格的符号，然后在个人库中生成关联器件。`,
+		'Pinmux2Symbol',
 	);
 }
+
+// The extension host calls this hook after loading the package.
+// eslint-disable-next-line unused-imports/no-unused-vars
+export function activate(status?: 'onStartupFinished', arg?: string): void {}

@@ -3,6 +3,7 @@
 !/.vscode/settings.json
 /coverage/
 /dist/
+/iframe/configurator.js
 /node_modules/
 /.eslintcache
 debug.log

@@ -1,10 +1,10 @@
 {
-	"name": "your-extension-name",
-	"uuid": "",
-	"displayName": "填写你的扩展名称 / Your Extension Name",
-	"description": "",
-	"version": "1.0.0",
-	"publisher": "",
+	"name": "pinmux2symbol",
+	"uuid": "525abe4b26714316be037c2e88353a10",
+	"displayName": "Pinmux2Symbol",
+	"description": "Import a pinmux CSV and generate an EasyEDA device with an editable schematic symbol.",
+	"version": "1.1.4",
+	"publisher": "easyeda-pinmux2symbol",
 	"engines": {
 		"eda": "^3.2.0"
 	},
@@ -13,9 +13,14 @@
 		"type": "extension-store",
 		"url": ""
 	},
-	"categories": "Other",
+	"categories": [
+		"Schematic",
+		"Symbol"
+	],
 	"keywords": [
-		"Tool"
+		"Pinmux",
+		"Schematic",
+		"Symbol"
 	],
 	"images": {
 		"logo": "./images/logo.png"
@@ -28,12 +33,17 @@
 	"headerMenus": {
 		"home": [
 			{
-				"id": "menuId1",
-				"title": "Ext Menu",
+				"id": "pinmux2symbol-home",
+				"title": "Pinmux2Symbol",
 				"menuItems": [
 					{
+						"id": "ImportPinmuxCsv",
+						"title": "从 CSV 生成器件和符号",
+						"registerFn": "importPinmuxCsv"
+					},
+					{
 						"id": "About",
-						"title": "About...",
+						"title": "关于 Pinmux2Symbol",
 						"registerFn": "about"
 					}
 				]
@@ -41,26 +51,26 @@
 		],
 		"sch": [
 			{
-				"id": "menuId2",
-				"title": "Ext Menu",
+				"id": "pinmux2symbol-sch",
+				"title": "Pinmux2Symbol",
 				"menuItems": [
 					{
-						"id": "About",
-						"title": "About...",
-						"registerFn": "about"
+						"id": "ImportPinmuxCsv",
+						"title": "从 CSV 生成器件和符号",
+						"registerFn": "importPinmuxCsv"
 					}
 				]
 			}
 		],
-		"pcb": [
+		"symbol": [
 			{
-				"id": "menuId3",
-				"title": "Ext Menu",
+				"id": "pinmux2symbol-symbol",
+				"title": "Pinmux2Symbol",
 				"menuItems": [
 					{
-						"id": "About",
-						"title": "About...",
-						"registerFn": "about"
+						"id": "ImportPinmuxCsv",
+						"title": "从 CSV 生成器件和符号",
+						"registerFn": "importPinmuxCsv"
 					}
 				]
 			}

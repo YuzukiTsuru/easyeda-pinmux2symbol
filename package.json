@@ -15,6 +15,7 @@
 	"scripts": {
 		"compile": "rimraf ./dist/ && ts-node ./config/esbuild.prod.ts",
 		"lint": "eslint",
+		"test": "node --loader ts-node/esm/transpile-only --test tests/*.test.ts",
 		"fix": "eslint --fix",
 		"build": "npm run compile && ts-node ./build/packaged.ts",
 		"debug": "ts-node ./build/dev.ts",

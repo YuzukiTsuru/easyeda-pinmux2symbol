@@ -1,11 +1,160 @@
 <!doctype html>
 <html lang="zh-Hans">
-	<head>
-		<title>Inner Frame</title>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	</head>
-	<body>
-		<p>这是一个示例 IFrame 页面</p>
-	</body>
+
+<head>
+	<title>Pinmux2Symbol 配置与预览</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<link rel="icon" href="data:," />
+	<link rel="stylesheet" href="/iframe/app.css" />
+</head>
+
+<body>
+	<div class="app">
+		<header class="app-header">
+			<div class="brand">Pinmux2Symbol</div>
+			<div class="source-bar">
+				<button id="choose-file" type="button">选择 CSV</button>
+				<span id="file-name" class="file-name">尚未选择文件</span>
+				<input id="browser-file" class="hidden-file" type="file" accept=".csv,.txt,text/csv,text/plain" />
+			</div>
+		</header>
+
+		<main class="workspace">
+			<aside class="config-pane" aria-label="符号配置">
+				<div class="config-scroll">
+					<section class="config-section">
+						<h2>输出</h2>
+						<div class="field field-wide">
+							<label for="symbol-name">器件名称</label>
+							<input id="symbol-name" type="text" maxlength="128" placeholder="选择 CSV 后自动填写" />
+						</div>
+					</section>
+
+					<section class="config-section">
+						<h2>几何尺寸</h2>
+						<div class="field"><label for="rowPitch">行间距</label><input id="rowPitch" data-option="rowPitch"
+								data-kind="grid" type="number" min="1" max="6" step="1" value="1" /><output class="unit"
+								data-unit-for="rowPitch">2.54 mm</output></div>
+						<div class="field"><label for="headerHeight">表头高度</label><input id="headerHeight"
+								data-option="headerHeight" data-kind="grid" type="number" min="2" max="10" step="1"
+								value="2" /><output class="unit" data-unit-for="headerHeight">5.08 mm</output></div>
+						<div class="field"><label for="bankGap">Bank 间距</label><input id="bankGap" data-option="bankGap"
+								data-kind="grid" type="number" min="2" max="12" step="1" value="2" /><output
+								class="unit" data-unit-for="bankGap">5.08 mm</output></div>
+						<div class="field"><label for="pinLength">引脚长度</label><input id="pinLength"
+								data-option="pinLength" data-kind="grid" type="number" min="1" max="10" step="1"
+								value="2" /><output class="unit" data-unit-for="pinLength">2.54 mm</output></div>
+						<div class="field"><label for="titleGap">标题间距</label><input id="titleGap" data-option="titleGap"
+								data-kind="grid" type="number" min="2" max="12" step="1" value="2" /><output
+								class="unit" data-unit-for="titleGap">5.08 mm</output></div>
+						<div class="field"><label for="cellPadding">文字内边距</label><input id="cellPadding"
+								data-option="cellPadding" data-kind="grid" type="number" min="1" max="5" step="1"
+								value="1" /><output class="unit" data-unit-for="cellPadding">2.54 mm</output></div>
+						<div class="field"><label for="muxColumnMinWidth">MUX 最小列宽</label><input id="muxColumnMinWidth"
+								data-option="muxColumnMinWidth" data-kind="grid" type="number" min="4" max="40" step="1"
+								value="7" /><output class="unit" data-unit-for="muxColumnMinWidth">17.78 mm</output>
+						</div>
+						<div class="field"><label for="muxColumnMaxWidth">MUX 最大列宽</label><input id="muxColumnMaxWidth"
+								data-option="muxColumnMaxWidth" data-kind="grid" type="number" min="4" max="60" step="1"
+								value="18" /><output class="unit" data-unit-for="muxColumnMaxWidth">45.72 mm</output>
+						</div>
+						<div class="field"><label for="disableColumnMinWidth">DISABLE 最小宽</label><input
+								id="disableColumnMinWidth" data-option="disableColumnMinWidth" data-kind="grid"
+								type="number" min="4" max="40" step="1" value="7" /><output class="unit"
+								data-unit-for="disableColumnMinWidth">17.78 mm</output></div>
+						<div class="field"><label for="pinColumnMinWidth">PIN 最小列宽</label><input id="pinColumnMinWidth"
+								data-option="pinColumnMinWidth" data-kind="grid" type="number" min="3" max="30" step="1"
+								value="5" /><output class="unit" data-unit-for="pinColumnMinWidth">12.70 mm</output>
+						</div>
+						<div class="field"><label for="minBodyWidth">主体最小宽度</label><input id="minBodyWidth"
+								data-option="minBodyWidth" data-kind="grid" type="number" min="0" max="160" step="1"
+								value="0" /><output class="unit" data-unit-for="minBodyWidth">0.00 mm</output></div>
+					</section>
+
+					<section class="config-section">
+						<h2>字体</h2>
+						<div class="field"><label for="titleFontSize">主标题</label><input id="titleFontSize"
+								data-option="titleFontSize" data-kind="font" type="number" min="0.06" max="0.24"
+								step="0.01" value="0.12" /><span class="unit">inch</span></div>
+						<div class="field"><label for="bankFontSize">Bank 标题</label><input id="bankFontSize"
+								data-option="bankFontSize" data-kind="font" type="number" min="0.06" max="0.20"
+								step="0.01" value="0.10" /><span class="unit">inch</span></div>
+						<div class="field"><label for="headerFontSize">MUX 表头</label><input id="headerFontSize"
+								data-option="headerFontSize" data-kind="font" type="number" min="0.06" max="0.20"
+								step="0.01" value="0.09" /><span class="unit">inch</span></div>
+						<div class="field"><label for="cellFontSize">MUX 内容</label><input id="cellFontSize"
+								data-option="cellFontSize" data-kind="font" type="number" min="0.06" max="0.18"
+								step="0.01" value="0.08" /><span class="unit">inch</span></div>
+						<div class="field"><label for="pinNameFontSize">引脚名称</label><input id="pinNameFontSize"
+								data-option="pinNameFontSize" data-kind="font" type="number" min="0.06" max="0.18"
+								step="0.01" value="0.08" /><span class="unit">inch</span></div>
+						<div class="field"><label for="pinNumberFontSize">引脚编号</label><input id="pinNumberFontSize"
+								data-option="pinNumberFontSize" data-kind="font" type="number" min="0.06" max="0.18"
+								step="0.01" value="0.07" /><span class="unit">inch</span></div>
+					</section>
+
+					<section class="config-section">
+						<h2>线条</h2>
+						<div class="field"><label for="outerLineWidth">外框线宽</label><input id="outerLineWidth"
+								data-option="outerLineWidth" data-kind="scalar" type="number" min="1" max="10" step="1"
+								value="2" /><span class="unit">等级</span></div>
+						<div class="field"><label for="headerLineWidth">表头线宽</label><input id="headerLineWidth"
+								data-option="headerLineWidth" data-kind="scalar" type="number" min="1" max="10" step="1"
+								value="2" /><span class="unit">等级</span></div>
+					</section>
+
+					<section class="config-section">
+						<h2>颜色</h2>
+						<div class="color-field"><label for="titleColor">标题 / 引脚名</label><input id="titleColor"
+								data-option="titleColor" data-kind="color" type="color" value="#1f2328" /><output
+								class="color-value" data-color-for="titleColor">#1F2328</output></div>
+						<div class="color-field"><label for="accentColor">Bank / 表头</label><input id="accentColor"
+								data-option="accentColor" data-kind="color" type="color" value="#c73737" /><output
+								class="color-value" data-color-for="accentColor">#C73737</output></div>
+						<div class="color-field"><label for="textColor">MUX 内容</label><input id="textColor"
+								data-option="textColor" data-kind="color" type="color" value="#4e565e" /><output
+								class="color-value" data-color-for="textColor">#4E565E</output></div>
+						<div class="color-field"><label for="mutedColor">引脚编号</label><input id="mutedColor"
+								data-option="mutedColor" data-kind="color" type="color" value="#737b83" /><output
+								class="color-value" data-color-for="mutedColor">#737B83</output></div>
+						<div class="color-field"><label for="pinColor">引脚线</label><input id="pinColor"
+								data-option="pinColor" data-kind="color" type="color" value="#880000" /><output
+								class="color-value" data-color-for="pinColor">#880000</output></div>
+					</section>
+				</div>
+
+				<footer class="config-footer">
+					<div id="status" class="status" aria-live="polite">请选择 pinmux CSV。</div>
+					<div class="progress-track" role="progressbar" aria-label="生成进度" aria-valuemin="0"
+						aria-valuemax="100" aria-valuenow="0">
+						<div id="progress" class="progress-bar"></div>
+					</div>
+					<div class="actions">
+						<button id="reset-options" type="button">恢复默认值</button>
+						<div class="actions-right">
+							<button id="cancel" type="button">取消</button>
+							<button id="generate" class="primary" type="button" disabled>生成器件和符号</button>
+						</div>
+					</div>
+				</footer>
+			</aside>
+
+			<section class="preview-pane" aria-label="符号实时预览">
+				<div class="preview-toolbar">
+					<div id="preview-summary" class="preview-summary">100 mil 网格</div>
+					<button id="zoom-out" class="icon-button" type="button" aria-label="缩小" title="缩小">−</button>
+					<button id="zoom-in" class="icon-button" type="button" aria-label="放大" title="放大">+</button>
+					<button id="fit-preview" class="fit-button" type="button">适合窗口</button>
+				</div>
+				<div id="preview-stage" class="preview-stage">
+					<svg id="symbol-preview" role="img" aria-label="EasyEDA Pinmux 符号预览"></svg>
+					<div id="empty-preview" class="empty-preview">选择 CSV 后显示预览</div>
+				</div>
+			</section>
+		</main>
+	</div>
+	<script src="/iframe/configurator.js"></script>
+</body>
+
 </html>

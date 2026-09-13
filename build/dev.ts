@@ -5,7 +5,7 @@ import esbuild from 'esbuild';
 import fs from 'fs-extra';
 import { WebSocketServer } from 'ws';
 
-import common from '../config/esbuild.common.ts';
+import common, { configurator } from '../config/esbuild.common.ts';
 import rawExtensionConfig from '../extension.json' with { type: 'json' };
 
 import { fixUuid, packageExtension, testUuid } from './utils.ts';
@@ -135,22 +135,22 @@ async function main() {
 		},
 	};
 
-	// 创建带插件的 context
-	const ctx = await esbuild.context({
-		...common,
+	// 创建主入口和 iframe 入口的构建 context
+	const contexts = await Promise.all([common, configurator].map(options => esbuild.context({
+		...options,
 		plugins: [rebuildPlugin],
-	});
+	})));
 
 	// 初始构建
 	console.log('[Dev Mode] Starting initial build...');
-	await ctx.rebuild();
+	await Promise.all(contexts.map(context => context.rebuild()));
 	console.log('[Dev Mode] Initial build complete');
 
 	// 初始打包
 	console.log('[Dev Mode] Starting to package extension...');
 	await packageExtension(ROOT_DIR, EEXT_PATH);
 	// 启动文件监听
-	await ctx.watch();
+	await Promise.all(contexts.map(context => context.watch()));
 	console.log('[Dev Mode] File watcher started, waiting for changes...');
 }
 
